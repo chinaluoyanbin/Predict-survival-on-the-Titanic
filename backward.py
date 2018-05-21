@@ -1,7 +1,10 @@
 import tensorflow as tf
 import numpy as np
+import pandas as pd
 from data_preprocess import train_preprocess
+from data_preprocess import test_preproces
 from forward import forward
+import os
 
 STEPS = 25000
 BATCH_SIZE = 100
@@ -60,6 +63,16 @@ def backward():
                     })
                 train_acc.append(train_acc_temp)
                 print(train_loss_temp, ' ', train_acc_temp)
+
+        # 测试集预测结果
+        test_x = test_preproces()
+        result = sess.run(pred, feed_dict={x: test_x})
+        # print(result)
+
+        gender = pd.read_csv(os.getcwd() + '\\data\\gender_submission.csv')
+        gender.pop('Survived')
+        gender.insert(1, 'Survived', result)
+        gender.to_csv(os.getcwd() + '\\data\\gender_submission.csv', index=False)
 
 
 if __name__ == '__main__':

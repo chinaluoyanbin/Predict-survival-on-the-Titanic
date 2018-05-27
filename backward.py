@@ -67,12 +67,12 @@ def backward():
         # 测试集预测结果
         test_x = test_preproces()
         result = sess.run(pred, feed_dict={x: test_x})
-        # print(result)
+        print(result)
 
         gender = pd.read_csv(os.getcwd() + '\\data\\gender_submission.csv')
         gender.pop('Survived')
         gender.insert(1, 'Survived', result)
-        gender.to_csv(os.getcwd() + '\\data\\gender_submission.csv', index=False)
+        gender.to_csv(os.getcwd() + '\\data\\submission.csv', index=False)
 
 
 if __name__ == '__main__':

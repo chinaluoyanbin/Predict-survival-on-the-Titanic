@@ -12,9 +12,12 @@ def get_bias(shape):
 
 
 def forward(x):
-    w = get_weight([12, 1])
+    w1 = get_weight([12, 3])
+    w2 = get_weight([3, 1])
     b = get_bias([1])
-    y = tf.matmul(x, w) + b
+
+    a = tf.matmul(x, w1)
+    y = tf.matmul(a, w2) + b
     pred = tf.cast(tf.sigmoid(y) > 0.5, tf.float32)
 
     return y, pred

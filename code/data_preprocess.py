@@ -1,6 +1,7 @@
 # coding: utf-8
 import pandas as pd
 import numpy as np
+import re
 
 
 def get_title(name):
@@ -66,8 +67,10 @@ def train_preprocess():
 
     # Name
     train['Title'] = train['Name'].apply(get_title)
-    train['Title'] = train['Title'].replace(['Lady', 'Countess', 'Capt', 'Col', \
-                                                 'Don', 'Dr', 'Major', 'Rev', 'Sir', 'Jonkheer', 'Dona'], 'Rare')
+    train['Title'] = train['Title'].replace([
+        'Lady', 'Countess', 'Capt', 'Col', 'Don', 'Dr', 'Major', 'Rev', 'Sir',
+        'Jonkheer', 'Dona'
+    ], 'Rare')
     train['Title'] = train['Title'].replace('Mlle', 'Miss')
     train['Title'] = train['Title'].replace('Ms', 'Miss')
     train['Title'] = train['Title'].replace('Mme', 'Mrs')
@@ -89,28 +92,75 @@ def train_preprocess():
 
 def test_preproces():
     # 读取test.csv为pandas.DataFrame
-    test = pd.read_csv(os.getcwd() + '\\data\\test.csv')
+    test = pd.read_csv('../input/test.csv')
 
-    # 数据预处理
-    test['Age'] = test['Age'].fillna(test['Age'].mean())
-    test['Cabin'] = pd.factorize(test.Cabin)[0]
-    test.fillna(0, inplace=True)
-    test['Sex'] = [1 if i == 'male' else 0 for i in test.Sex]
-    # 处理Pclass
+    # Pclass
     test['P1'] = np.array(test['Pclass'] == 1).astype(np.int32)
     test['P2'] = np.array(test['Pclass'] == 2).astype(np.int32)
     test['P3'] = np.array(test['Pclass'] == 3).astype(np.int32)
-    del test['Pclass']
-    # 处理Embarked
+
+    # Sex
+    # 把male/female转换成1/0
+    test['Sex'] = [1 if i == 'male' else 0 for i in test.Sex]
+
+    # SibSp and Parch
+    # 'FamilySize'：家庭成员人数
+    test['FamilySize'] = test['SibSp'] + test['Parch'] + 1
+    # 'IsAlone'：是否只身一人
+    test['IsAlone'] = 0
+    test.loc[test['FamilySize'] == 1, 'IsAlone'] = 1
+
+    # Embarked
+    test['Embarked'] = test['Embarked'].fillna('S')
+    # One-hot编码
     test['E1'] = np.array(test['Embarked'] == 'S').astype(np.int32)
     test['E2'] = np.array(test['Embarked'] == 'C').astype(np.int32)
     test['E3'] = np.array(test['Embarked'] == 'Q').astype(np.int32)
-    del test['Embarked']
 
-    # 得到test_x
+    # Fare
+    test['CategoricalFare'] = pd.qcut(test['Fare'], 4)
+    test['CategoricalFare'].cat.categories = [1, 2, 3, 4]
+    # one-hot编码
+    test['F1'] = np.array(test['CategoricalFare'] == 1).astype(np.int32)
+    test['F2'] = np.array(test['CategoricalFare'] == 2).astype(np.int32)
+    test['F3'] = np.array(test['CategoricalFare'] == 3).astype(np.int32)
+    test['F4'] = np.array(test['CategoricalFare'] == 4).astype(np.int32)
+
+    # Age
+    age_avg = test['Age'].mean()
+    age_std = test['Age'].std()
+    age_null_count = test['Age'].isnull().sum()
+    age_null_random_list = np.random.randint(
+        age_avg - age_std, age_avg + age_std, size=age_null_count)
+    test['Age'][np.isnan(test['Age'])] = age_null_random_list
+    test['Age'] = test['Age'].astype(int)
+    test['CategoricalAge'] = pd.qcut(test['Age'], 5)
+    test['CategoricalAge'].cat.categories = [1, 2, 3, 4, 5]
+    test['A1'] = np.array(test['CategoricalAge'] == 1).astype(np.int32)
+    test['A2'] = np.array(test['CategoricalAge'] == 2).astype(np.int32)
+    test['A3'] = np.array(test['CategoricalAge'] == 3).astype(np.int32)
+    test['A4'] = np.array(test['CategoricalAge'] == 4).astype(np.int32)
+    test['A5'] = np.array(test['CategoricalAge'] == 5).astype(np.int32)
+
+    # Name
+    test['Title'] = test['Name'].apply(get_title)
+    test['Title'] = test['Title'].replace([
+        'Lady', 'Countess', 'Capt', 'Col', 'Don', 'Dr', 'Major', 'Rev', 'Sir',
+        'Jonkheer', 'Dona'
+    ], 'Rare')
+    test['Title'] = test['Title'].replace('Mlle', 'Miss')
+    test['Title'] = test['Title'].replace('Ms', 'Miss')
+    test['Title'] = test['Title'].replace('Mme', 'Mrs')
+    test['T1'] = np.array(test['Title'] == 'Master').astype(np.int32)
+    test['T2'] = np.array(test['Title'] == 'Miss').astype(np.int32)
+    test['T3'] = np.array(test['Title'] == 'Mr').astype(np.int32)
+    test['T4'] = np.array(test['Title'] == 'Mrs').astype(np.int32)
+    test['T5'] = np.array(test['Title'] == 'Rare').astype(np.int32)
+
+    # 数据清洗
     test_x = test[[
-        'Sex', 'Age', 'SibSp', 'Parch', 'Fare', 'Cabin', 'P1', 'P2',
-        'P3', 'E1', 'E2', 'E3'
+        'P1', 'P2', 'P3', 'Sex', 'IsAlone', 'E1', 'E2', 'E3', 'F1', 'F2', 'F3',
+        'F4', 'A1', 'A2', 'A3', 'A4', 'A5', 'T1', 'T2', 'T3', 'T4', 'T5'
     ]]
 
     return test_x

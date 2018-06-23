@@ -1,4 +1,4 @@
-# coding: utf-8
+# -*- coding: utf-8 -*-
 import pandas as pd
 import numpy as np
 import re
@@ -85,7 +85,7 @@ def train_preprocess():
         'P1', 'P2', 'P3', 'Sex', 'IsAlone', 'E1', 'E2', 'E3', 'F1', 'F2', 'F3',
         'F4', 'A1', 'A2', 'A3', 'A4', 'A5', 'T1', 'T2', 'T3', 'T4', 'T5'
     ]]
-    train_y_ = train[['Survived']]
+    train_y_ = train['Survived'].values.reshape(len(train), 1)
 
     return train_x, train_y_
 
@@ -164,3 +164,14 @@ def test_preproces():
     ]]
 
     return test_x
+
+
+# 读取数据集
+def read_data_sets():
+    dataset = {}
+    train_x, train_y_ = train_preprocess()
+    test_x = test_preproces()
+    dataset['train_x'] = train_x
+    dataset['train_y_'] = train_y_
+    dataset['test_x'] = test_x
+    return dataset

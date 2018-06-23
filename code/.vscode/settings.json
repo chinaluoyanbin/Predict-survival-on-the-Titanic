@@ -1,3 +1,10 @@
 {
-    "python.pythonPath": "D:\\Program Files\\Python36\\python.exe"
+    "python.pythonPath": "C:\\Program Files\\Python36\\python.exe",
+    "python.unitTest.unittestArgs": [
+        "-v",
+        "-s",
+        ".",
+        "-p",
+        "test*.py"
+    ]
 }

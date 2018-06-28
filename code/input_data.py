@@ -163,15 +163,18 @@ def test_preproces():
         'F4', 'A1', 'A2', 'A3', 'A4', 'A5', 'T1', 'T2', 'T3', 'T4', 'T5'
     ]]
 
-    return test_x
+    test_y = test[['PassengerId']]
+
+    return test_x, test_y
 
 
 # 读取数据集
 def read_data_sets():
     dataset = {}
     train_x, train_y_ = train_preprocess()
-    test_x = test_preproces()
+    test_x, test_y = test_preproces()
     dataset['train_x'] = train_x
     dataset['train_y_'] = train_y_
     dataset['test_x'] = test_x
+    dataset['test_y'] = test_y
     return dataset
